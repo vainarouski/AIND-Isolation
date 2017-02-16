@@ -6,14 +6,13 @@ augment the test suite with your own test cases to further test your code.
 You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
-import random
 
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
 
-
+# ID_Improved 74.29% vs Student 88.57%
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -37,8 +36,110 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
-    # TODO: finish this function!
-    raise NotImplementedError
+    player_available_moves = len(game.get_legal_moves(player))
+
+    if game.is_loser(player):
+        return 0.
+
+
+    if game.is_winner(player):
+        return 1.
+
+    all_blank_spaces = len(game.get_blank_spaces())
+
+
+    return player_available_moves / all_blank_spaces
+
+#ID_Improved 76.43% va Student 82.86%
+# def custom_score(game, player):
+#     """Calculate the heuristic value of a game state from the point of view
+#     of the given player.
+#
+#     Note: this function should be called from within a Player instance as
+#     `self.score()` -- you should not need to call this function directly.
+#
+#     Parameters
+#     ----------
+#     game : `isolation.Board`
+#         An instance of `isolation.Board` encoding the current state of the
+#         game (e.g., player locations and blocked cells).
+#
+#     player : object
+#         A player instance in the current game (i.e., an object corresponding to
+#         one of the player objects `game.__player_1__` or `game.__player_2__`.)
+#
+#     Returns
+#     -------
+#     float
+#         The heuristic value of the current game state to the specified player.
+#     """
+#
+#     if game.is_loser(player):
+#         return float("-inf")
+#
+#     if game.is_winner(player):
+#         return float("inf")
+#
+#
+#     sum = 0
+#
+#     for legal_move in game.get_legal_moves(player):
+#         x, y = legal_move
+#
+#         sum += x + y
+#
+#     return sum
+
+
+#ID_Improved 75.57% vs Student 81.43%
+# def custom_score(game, player):
+#     """Calculate the heuristic value of a game state from the point of view
+#     of the given player.
+#
+#     Note: this function should be called from within a Player instance as
+#     `self.score()` -- you should not need to call this function directly.
+#
+#     Parameters
+#     ----------
+#     game : `isolation.Board`
+#         An instance of `isolation.Board` encoding the current state of the
+#         game (e.g., player locations and blocked cells).
+#
+#     player : object
+#         A player instance in the current game (i.e., an object corresponding to
+#         one of the player objects `game.__player_1__` or `game.__player_2__`.)
+#
+#     Returns
+#     -------
+#     float
+#         The heuristic value of the current game state to the specified player.
+#     """
+#
+#     player_available_moves = len(game.get_legal_moves(player))
+#
+#     opponent_available_moves = len(game.get_legal_moves(game.get_opponent(player)))
+#
+#     all_blank_spaces = len(game.get_blank_spaces())
+#
+#     if game.is_loser(player):
+#         return float("-inf")
+#
+#     if game.is_winner(player):
+#         return float("inf")
+#
+#     if all_blank_spaces > all_blank_spaces/2:
+#
+#         sum = 0
+#
+#         for legal_move in game.get_legal_moves(player):
+#             x, y = legal_move
+#
+#             sum += (x + y) / game.height
+#
+#         return sum
+#
+#     else:
+#         return player_available_moves - opponent_available_moves
 
 
 class CustomPlayer:
@@ -118,103 +219,186 @@ class CustomPlayer:
 
         self.time_left = time_left
 
-        # TODO: finish this function!
-
         # Perform any required initializations, including selecting an initial
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
 
+        best_move = (-1, -1)
+
+        if len(legal_moves) == 0:
+            return best_move
+
         try:
-            # The search method call (alpha beta or minimax) should happen in
-            # here in order to avoid timeout. The try/except block will
-            # automatically catch the exception raised by the search method
-            # when the timer gets close to expiring
-            pass
+                # The search method call (alpha beta or minimax) should happen in
+                # here in order to avoid timeout. The try/except block will
+                # automatically catch the exception raised by the search method
+                # when the timer gets close to expiring
+
+            if self.iterative:
+
+                depth = 1
+
+                while True:
+                    if self.method == 'minimax':
+                        best_score, best_move = self.minimax(game, depth, False)
+                    elif self.method == 'alphabeta':
+                        best_score, best_move = self.alphabeta(game, depth, False)
+                    depth += 1
+            else:
+
+                if self.method == 'minimax':
+                    best_score, best_move = self.minimax(game, self.search_depth, False)
+                elif self.method == 'alphabeta':
+                    best_score, best_move = self.alphabeta(game, self.search_depth, False)
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            pass
+            return best_move
 
-        # Return the best move from the last completed search iteration
-        raise NotImplementedError
+            # Return the best move from the last completed search iteration
+        return best_move
 
     def minimax(self, game, depth, maximizing_player=True):
-        """Implement the minimax search algorithm as described in the lectures.
+            """Implement the minimax search algorithm as described in the lectures.
 
-        Parameters
-        ----------
-        game : isolation.Board
-            An instance of the Isolation game `Board` class representing the
-            current game state
+            Parameters
+            ----------
+            game : isolation.Board
+                An instance of the Isolation game `Board` class representing the
+                current game state
 
-        depth : int
-            Depth is an integer representing the maximum number of plies to
-            search in the game tree before aborting
+            depth : int
+                Depth is an integer representing the maximum number of plies to
+                search in the game tree before aborting
 
-        maximizing_player : bool
-            Flag indicating whether the current search depth corresponds to a
-            maximizing layer (True) or a minimizing layer (False)
+            maximizing_player : bool
+                Flag indicating whether the current search depth corresponds to a
+                maximizing layer (True) or a minimizing layer (False)
 
-        Returns
-        -------
-        float
-            The score for the current search branch
+            Returns
+            -------
+            float
+                The score for the current search branch
 
-        tuple(int, int)
-            The best move for the current branch; (-1, -1) for no legal moves
+            tuple(int, int)
+                The best move for the current branch; (-1, -1) for no legal moves
 
-        Notes
-        -----
-            (1) You MUST use the `self.score()` method for board evaluation
-                to pass the project unit tests; you cannot call any other
-                evaluation function directly.
-        """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
+            Notes
+            -----
+                (1) You MUST use the `self.score()` method for board evaluation
+                    to pass the project unit tests; you cannot call any other
+                    evaluation function directly.
+            """
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+            if depth == 0 or len(game.get_legal_moves()) == 0:
+                return self.score(game, self), (-1, -1)
+
+            if maximizing_player:
+
+                max_score = float("-inf")
+                max_move = (-1, -1)
+
+                for legal_move in game.get_legal_moves():
+                    score, move = self.minimax(game.forecast_move(legal_move), depth - 1, False)
+                    if score > max_score:
+                        max_score = score
+                        max_move = legal_move
+
+                return max_score, max_move
+            else:
+
+                min_score = float("inf")
+                min_move = (-1, -1)
+
+                for legal_move in game.get_legal_moves():
+                    score, move = self.minimax(game.forecast_move(legal_move), depth - 1, True)
+                    if score < min_score:
+                        min_score = score
+                        min_move = legal_move
+
+                return min_score, min_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
-        """Implement minimax search with alpha-beta pruning as described in the
-        lectures.
+            """Implement minimax search with alpha-beta pruning as described in the
+            lectures.
 
-        Parameters
-        ----------
-        game : isolation.Board
-            An instance of the Isolation game `Board` class representing the
-            current game state
+            Parameters
+            ----------
+            game : isolation.Board
+                An instance of the Isolation game `Board` class representing the
+                current game state
 
-        depth : int
-            Depth is an integer representing the maximum number of plies to
-            search in the game tree before aborting
+            depth : int
+                Depth is an integer representing the maximum number of plies to
+                search in the game tree before aborting
 
-        alpha : float
+            alpha : float
             Alpha limits the lower bound of search on minimizing layers
 
-        beta : float
+            beta : float
             Beta limits the upper bound of search on maximizing layers
 
-        maximizing_player : bool
-            Flag indicating whether the current search depth corresponds to a
-            maximizing layer (True) or a minimizing layer (False)
+            maximizing_player : bool
+                Flag indicating whether the current search depth corresponds to a
+                maximizing layer (True) or a minimizing layer (False)
 
-        Returns
-        -------
-        float
-            The score for the current search branch
+            Returns
+            -------
+            float
+                The score for the current search branch
 
-        tuple(int, int)
-            The best move for the current branch; (-1, -1) for no legal moves
+            tuple(int, int)
+                The best move for the current branch; (-1, -1) for no legal moves
 
-        Notes
-        -----
-            (1) You MUST use the `self.score()` method for board evaluation
-                to pass the project unit tests; you cannot call any other
-                evaluation function directly.
-        """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
+            Notes
+            -----
+                (1) You MUST use the `self.score()` method for board evaluation
+                    to pass the project unit tests; you cannot call any other
+                    evaluation function directly.
+            """
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+            if depth == 0 or len(game.get_legal_moves()) == 0:
+                return self.score(game, self), (-1, -1)
+
+            if maximizing_player:
+
+                max_score = float("-inf")
+                max_move = (-1, -1)
+
+                for legal_move in game.get_legal_moves():
+                    score, move = self.alphabeta(game.forecast_move(legal_move), depth - 1, alpha, beta, False)
+
+                    if score > max_score:
+                        max_score = score
+                        max_move = legal_move
+
+                    if max_score >= beta:
+                        break
+
+                    if max_score > alpha:
+                        alpha = max_score
+
+                return max_score, max_move
+            else:
+
+                min_score = float("inf")
+                min_move = (-1, -1)
+
+                for legal_move in game.get_legal_moves():
+                    score, move = self.alphabeta(game.forecast_move(legal_move), depth - 1, alpha, beta, True)
+
+                    if score < min_score:
+                        min_score = score
+                        min_move = legal_move
+
+                    if min_score <= alpha:
+                        break
+
+                    if score < beta:
+                        beta = score
+
+                return min_score, min_move
